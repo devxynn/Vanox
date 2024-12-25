@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "/89NfKP6vVo=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\ehsan\\Desktop\\Vanox\\Vanox\\Vanox.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ehsan\\.nuget\\packages\\avalonedit\\6.3.0.90\\avalonedit.6.3.0.90.nupkg.sha512",
+    "C:\\Users\\ehsan\\.nuget\\packages\\wpf-ui\\3.0.5\\wpf-ui.3.0.5.nupkg.sha512"
+  ],
+  "logs": []
+}
