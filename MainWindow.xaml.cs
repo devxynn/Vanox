@@ -1,4 +1,5 @@
-﻿using System.Text;
+using System;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -13,6 +14,7 @@ namespace Vanox
     public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     {
         FaisalAPI.FAISAL api = new FaisalAPI.FAISAL();
+        private bool isAttached = false; // Tracks whether the API is attached
 
         public MainWindow()
         {
@@ -21,22 +23,58 @@ namespace Vanox
 
         private void Attach_Click(object sender, RoutedEventArgs e)
         {
-            api.Attach();
+            try
+            {
+                api.Attach(); // Call the Attach method
+                isAttached = true; // Mark as attached
+                MessageBox.Show("Successfully attached!", "Attach", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to attach: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                isAttached = false; // Reset attachment state
+            }
         }
 
         private void Execute_Click(object sender, RoutedEventArgs e)
         {
+            if (!isAttached) // Ensure attachment before executing scripts
+            {
+                MessageBox.Show("Please attach first!", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (TabContainer.SelectedItem is TabItem selectedTab &&
                 selectedTab.Content is Grid tabContent &&
-                tabContent.Children[0] is TextBox editor)
+                tabContent.Children[0] is Border border &&
+                border.Child is ICSharpCode.AvalonEdit.TextEditor editor)
             {
-                api.SendScript(editor.Text);
+                try
+                {
+                    string script = editor.Text; // Get the script from AvalonEdit
+                    if (string.IsNullOrWhiteSpace(script))
+                    {
+                        MessageBox.Show("Script cannot be empty!", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    api.SendScript(script); // Execute the script
+                    MessageBox.Show("Script executed successfully!", "Execute", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Script execution failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No valid script editor found in the selected tab.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
         private void AddTab_Click(object sender, RoutedEventArgs e)
         {
-            // Limit the number of tabs to 3
+            // Limit the number of tabs to 4
             if (TabContainer.Items.Count >= 4)
             {
                 MessageBox.Show("You can only have up to 4 tabs.", "Limit Reached", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -90,11 +128,10 @@ namespace Vanox
                         CornerRadius = new CornerRadius(0, 7, 7, 7),
                         Background = new SolidColorBrush(Color.FromArgb(80, 0, 0, 0)),
                         Margin = new Thickness(9, -1, 10, 0),
-                        Height = 296.7,
                         Child = new ICSharpCode.AvalonEdit.TextEditor
                         {
                             ShowLineNumbers = true,
-                            SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.GetDefinition("lua.xshd"),
+                            SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.GetDefinition("Lua"), // Ensure Lua highlighting is loaded
                             FontFamily = new FontFamily("Consolas"),
                             FontSize = 14,
                             Background = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0)),
@@ -163,6 +200,5 @@ namespace Vanox
                 textBox.IsReadOnly = true;
             }
         }
-
     }
 }
